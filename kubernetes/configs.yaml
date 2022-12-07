@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap 
+metadata:
+  name: backend-service-configmap 
+data:
+  # Configuration values can be set as key-value properties
+  endpoint: http://backend-service-service:8080/backend-service
+  database_uri: mongodb://localhost:27017
+  minio_endpoint: "http://minio:9000"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: minio-secret
+data:
+  password: cm9vdHBhc3MxMjM=
+  username: cm9vdHVzZXI=

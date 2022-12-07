@@ -17,7 +17,7 @@ spec:
                 name: backend-service
                 port:
                   number: 8080
-            path: /
+            path: /backend-service
             pathType: Prefix
 
 # Your ingress rules here

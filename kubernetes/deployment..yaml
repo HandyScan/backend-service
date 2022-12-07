@@ -18,3 +18,26 @@ spec:
           ports:
             - containerPort: 8080
               protocol: TCP
+          env:
+            - name: SEARCH_SERVICE_ENDPOINT
+              valueFrom:
+                configMapKeyRef: 
+                  name: search-service-configmap
+                  key: endpoint
+            - name: MINIO_ENDPOINT
+              valueFrom:
+                configMapKeyRef: 
+                  name: backend-service-configmap 
+                  key: minio_endpoint
+            - name: MINIO_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: username
+                  optional: false
+            - name: MINIO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: minio-secret
+                  key: password
+                  optional: false
