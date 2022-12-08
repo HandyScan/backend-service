@@ -23,8 +23,7 @@ public class MinioConfig {
     @Bean 
     public MinioClient getMinioConfig(){
         log.info("Creating minio client");
-        MinioClient minioClient =
-          MinioClient.builder()
+        MinioClient minioClient = MinioClient.builder()
               .endpoint(minioEndpoint)
               .credentials(minioUserName, mminioPassword)
               .build();

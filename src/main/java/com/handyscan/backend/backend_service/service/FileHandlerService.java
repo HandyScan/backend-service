@@ -1,7 +1,5 @@
 package com.handyscan.backend.backend_service.service;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public interface FileHandlerService {

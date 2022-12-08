@@ -16,7 +16,7 @@ import lombok.extern.log4j.Log4j2;
 @Service
 @Log4j2
 public class FileHandlerServiceImpl implements FileHandlerService {
-
+    private Integer partsize = 5 * 1024 * 1024;
     @Autowired
     private MinioClient minioClient;
 
@@ -41,7 +41,7 @@ public class FileHandlerServiceImpl implements FileHandlerService {
     @Override
     public boolean saveFile(InputStream inputStream, String fileName, String path) {
         PutObjectArgs putObjectArgs = PutObjectArgs.builder().bucket(path)
-            .object(fileName).stream(inputStream, -1, -1).build();
+            .object(fileName).stream(inputStream, -1, partsize).build();
         try{
             ObjectWriteResponse objectWriteResponse = minioClient.putObject(putObjectArgs);
             log.info("Successfully wrote object {} to bucket {}. Tag : {}", fileName, path, objectWriteResponse.etag());
