@@ -13,12 +13,15 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.handyscan.backend.backend_service.model.Response;
+import com.handyscan.backend.backend_service.repository.UserRecordRepository;
 import com.handyscan.backend.backend_service.service.ApplicationService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.log4j.Log4j2;
 
 @RestController
 @RequestMapping("/api/v1")
+@Log4j2
 public class ApplicationController {
     public UUID uuid = UUID.randomUUID();
 
@@ -28,32 +31,24 @@ public class ApplicationController {
     @Autowired
     ApplicationService restService;
 
-    // @Value("${SEARCH_SERVICE_ENDPOINT}")
-    private String search_service_endpoint;
+    @Autowired 
+    UserRecordRepository userRecordRepository; 
 
     @GetMapping("/sup")
     @Operation(summary = "Api responds with sup and a unique identifier")
     public String sup() {
-        return "Sup " +  search_service_endpoint + uuid.toString();
-    }
-
-    @GetMapping("/callApi")
-    @Operation(summary = "Api responds with sup and a unique identifier")
-    public String sup(@RequestParam String endpoint) {
-        System.out.println("Endpoint is " + endpoint);
-        String response = restTemplate.getForObject(endpoint, String.class);
-        System.out.println("Response is " + response);
-        return response;
+        return "Sup " + uuid.toString();
     }
 
     @PostMapping("/uploadImageAndProcess")
     @Operation(summary = "Api to upload and start the file processing")
-    public Response uploadImageAndProcess(@RequestParam("file") MultipartFile file, @RequestParam("fileName") String fileName) throws Exception {
-            
-        // response.setContentType("text/html;charset=UTF-8");
-        // final String fileName = request.getParameter("fileName");
-        // final Part filePart = request.getPart("file");
-
-        return restService.storeFileInUserUploads(file.getInputStream(), fileName);
+    public Response uploadImageAndProcess(
+        @RequestParam("file") MultipartFile file, 
+        @RequestParam("fileName") String fileName,
+        @RequestParam("collection") String collection,
+        @RequestParam("userName") String userName) 
+            throws Exception {
+        log.info("Recieved request for uploading file {} for user {}, collection {}", fileName, userName, collection);
+        return restService.storeFileInUserUploads(file.getInputStream(), fileName, userName, collection);
     }
 }

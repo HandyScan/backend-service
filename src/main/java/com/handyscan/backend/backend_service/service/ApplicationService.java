@@ -6,5 +6,5 @@ import com.handyscan.backend.backend_service.model.Response;
 
 public interface ApplicationService {
     
-    public Response storeFileInUserUploads(InputStream inputStream, String fileName);
+    public Response storeFileInUserUploads(InputStream inputStream, String fileName, String username, String collection);
 }
