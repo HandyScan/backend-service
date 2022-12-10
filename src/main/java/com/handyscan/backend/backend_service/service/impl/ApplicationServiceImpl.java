@@ -1,16 +1,24 @@
 package com.handyscan.backend.backend_service.service.impl;
 
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.compress.utils.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.google.common.net.HttpHeaders;
 import com.handyscan.backend.backend_service.model.HandyScanRecord;
 import com.handyscan.backend.backend_service.model.ObjectDetails;
 import com.handyscan.backend.backend_service.model.ProcessingStatusEnum;
@@ -33,7 +41,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String processingBucket;
 
     @Autowired
-    FileHandlerService FileHandlerService;
+    FileHandlerService fileHandlerService;
 
     @Autowired
     KafkaService kafkaService;
@@ -42,14 +50,14 @@ public class ApplicationServiceImpl implements ApplicationService {
     UserRecordRepository userRecordRepository;
 
     @Override
-    public Response storeFileInUserUploads(InputStream inputStream, String fileName, String username, String collection) {
-        FileHandlerService.saveFile(inputStream, fileName, processingBucket);
-        sendMessageToKafka(fileName, processingBucket, username, collection);
-        updateDatabase(fileName, processingBucket, username, collection);
+    public Response storeFileInUserUploads(InputStream inputStream, String fileName, String userName, String collection) {
+        fileHandlerService.saveFile(inputStream, fileName, processingBucket);
+        sendMessageToKafka(fileName, processingBucket, userName, collection);
+        updateDatabase(fileName, processingBucket, userName, collection);
         return null;
     }
 
-    private void sendMessageToKafka(String fileName, String bucket, String username, String collection){
+    private void sendMessageToKafka(String fileName, String bucket, String userName, String collection){
         Map<String,String> message = new HashMap<>();
         message.put("fileName", fileName);
         message.put("bucket", processingBucket);
@@ -58,7 +66,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         kafkaService.sendMessageToOcr(message);
     }
 
-    private void updateDatabase(String fileName, String bucket, String username, String collection){
+    private void updateDatabase(String fileName, String bucket, String userName, String collection){
         HandyScanRecord handyScanRecord = HandyScanRecord.builder()
             .status(ProcessingStatusEnum.OCR)
             .sourceFile(
@@ -68,7 +76,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     .build()
                 )
             .build();
-        Optional<UserRecord> optionalUserRecord = userRecordRepository.findItem(username, collection);
+        Optional<UserRecord> optionalUserRecord = userRecordRepository.findItem(userName, collection);
         UserRecord userRecord;
         if(optionalUserRecord.isPresent()){
             userRecord = optionalUserRecord.get();
@@ -79,12 +87,52 @@ public class ApplicationServiceImpl implements ApplicationService {
             log.info("Creating new collection for the user");
             userRecord = UserRecord.builder()
             .id(UUID.randomUUID())
-            .user(username)
+            .user(userName)
             .collection(collection)
             .files(Collections.singletonMap(fileName, handyScanRecord))
             .build();
         }
         userRecordRepository.save(userRecord);
     }
-    
+
+    @Override
+    public List<String> getCollectionsForUser(String userName) {
+        List<UserRecord> userRecords = userRecordRepository.findCollectionsForUser(userName);
+        return userRecords.stream().map(UserRecord::getCollection).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getFilesForCollection(String userName, String collection) {
+        Optional<UserRecord> optionalUserRecord = userRecordRepository.findItem(userName, collection);
+        List<String> audioFiles = new ArrayList<>();
+        if(optionalUserRecord.isPresent()){
+            UserRecord userRecord = optionalUserRecord.get();
+            audioFiles.addAll(userRecord.getFiles().keySet());
+        }
+        return audioFiles;
+    }
+
+    @Override
+    public void downloadAudioFile(String userName, String collection, String fileName, HttpServletResponse response) {
+        Optional<UserRecord> optionalUserRecord = userRecordRepository.findItem(userName, collection);
+        if(optionalUserRecord.isPresent()){
+            UserRecord userRecord = optionalUserRecord.get();
+            ObjectDetails audioFileDetails = userRecord.getFiles().get(fileName).getAudioFile();
+            // ObjectDetails audioFileDetails = ObjectDetails.builder().bucket("processing").fileName("Thankyou.mp4").build();
+            try(
+                InputStream inputStream = fileHandlerService.readFile(audioFileDetails.getFileName(), audioFileDetails.getBucket());
+                OutputStream outputStream = response.getOutputStream();
+            ){
+                response.setStatus(HttpServletResponse.SC_OK);
+	            response.addHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + audioFileDetails.getFileName() + "\"");
+                IOUtils.copy(inputStream, outputStream);
+                log.info("Attached file {}",audioFileDetails.getFileName());
+                outputStream.flush();
+            }
+            catch(Exception e){
+                log.error("Error while reading the file {}", e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
 }
