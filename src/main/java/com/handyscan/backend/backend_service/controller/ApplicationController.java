@@ -69,6 +69,7 @@ public class ApplicationController {
         @RequestParam("fileName") String fileName,
         HttpServletResponse response
     ) throws Exception {
+        log.info("Recieved request to download {} , {} ,{}",userName, collection, fileName);
         applicationService.downloadAudioFile(userName, collection, fileName, response);
     }
 }

@@ -118,6 +118,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         if(optionalUserRecord.isPresent()){
             UserRecord userRecord = optionalUserRecord.get();
             ObjectDetails audioFileDetails = userRecord.getFiles().get(fileName).getAudioFile();
+            log.info("Reading file {} from bucket {}", audioFileDetails.getFileName(), audioFileDetails.getBucket());
             // ObjectDetails audioFileDetails = ObjectDetails.builder().bucket("processing").fileName("Thankyou.mp4").build();
             try(
                 InputStream inputStream = fileHandlerService.readFile(audioFileDetails.getFileName(), audioFileDetails.getBucket());
