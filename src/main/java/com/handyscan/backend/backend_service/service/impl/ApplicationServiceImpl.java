@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.google.common.io.Files;
 import com.google.common.net.HttpHeaders;
 import com.handyscan.backend.backend_service.model.HandyScanRecord;
 import com.handyscan.backend.backend_service.model.ObjectDetails;
@@ -81,7 +82,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         if(optionalUserRecord.isPresent()){
             userRecord = optionalUserRecord.get();
             log.info("Found existing collection for the user", userRecord);
-            userRecord.getFiles().put(fileName, handyScanRecord);
+            String key = fileName.replaceAll(".", "_");
+            userRecord.getFiles().put(Files.getNameWithoutExtension(fileName), handyScanRecord);
         }
         else{
             log.info("Creating new collection for the user");
@@ -89,10 +91,11 @@ public class ApplicationServiceImpl implements ApplicationService {
             .id(UUID.randomUUID())
             .user(userName)
             .collection(collection)
-            .files(Collections.singletonMap(fileName, handyScanRecord))
+            .files(Collections.singletonMap(Files.getNameWithoutExtension(fileName), handyScanRecord))
             .build();
         }
         userRecordRepository.save(userRecord);
+        log.info("Persisted to db successfully");
     }
 
     @Override

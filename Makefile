@@ -16,3 +16,6 @@ deploy:
 
 cleanup:
 	kubectl delete -f ./kubernetes
+
+logs:
+	kubectl logs -l app=backend-service -f

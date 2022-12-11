@@ -9,7 +9,7 @@ data:
   minio_endpoint: "http://minio:9000"
   mongodb_database: "handyscan"
   ocr_topicname: "ocr_topic"
-  processing_bucket: "ocr_bucket"
+  processing_bucket: "ocr-bucket"
   kafka_bootstrap_servers: "pkc-4r087.us-west2.gcp.confluent.cloud:9092"
   kafka_security_protocol: "SASL_SSL"
   kafka_sasl_mechanism: "PLAIN"
