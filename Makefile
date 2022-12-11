@@ -19,3 +19,6 @@ cleanup:
 
 logs:
 	kubectl logs -l app=backend-service -f
+
+deploy-gke:
+	kubectl apply -f ./kubernetes-gke
