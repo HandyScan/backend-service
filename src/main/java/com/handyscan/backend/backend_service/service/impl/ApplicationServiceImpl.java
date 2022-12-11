@@ -105,12 +105,17 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<String> getFilesForCollection(String userName, String collection) {
+    public List<Map<String, String>> getFilesForCollection(String userName, String collection) {
         Optional<UserRecord> optionalUserRecord = userRecordRepository.findItem(userName, collection);
-        List<String> audioFiles = new ArrayList<>();
+        List<Map<String, String>> audioFiles = new ArrayList<>();
         if(optionalUserRecord.isPresent()){
             UserRecord userRecord = optionalUserRecord.get();
-            audioFiles.addAll(userRecord.getFiles().keySet());
+            audioFiles = userRecord.getFiles().entrySet().stream().map( entry -> {
+                Map<String,String> res = new HashMap();
+                res.put("fileName", entry.getKey());
+                res.put("status", entry.getValue().getStatus().toString());
+                return res;
+            }).collect(Collectors.toList());
         }
         return audioFiles;
     }

@@ -1,6 +1,7 @@
 package com.handyscan.backend.backend_service.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
@@ -60,7 +61,7 @@ public class ApplicationController {
 
     @GetMapping("/getFilesForCollection")
     @Operation(summary = "Gets the list of audio files that have been generated for a collection")
-    public List<String> getFilesForCollection(@RequestParam("userName") String userName,@RequestParam("collection") String collection ) {
+    public List<Map<String, String>> getFilesForCollection(@RequestParam("userName") String userName,@RequestParam("collection") String collection ) {
         return applicationService.getFilesForCollection(userName, collection);
     }
 
