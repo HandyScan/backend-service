@@ -59,10 +59,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private void sendMessageToKafka(String fileName, String bucket, String userName, String collection){
         Map<String,String> message = new HashMap<>();
-        message.put("fileName", fileName);
-        message.put("bucket", processingBucket);
-        message.put("userName", processingBucket);
-        message.put("collection", processingBucket);
+        message.put("file_name", fileName);
+        message.put("bucket", bucket);
+        message.put("user_name", userName);
+        message.put("collection", collection);
         kafkaService.sendMessageToOcr(message);
     }
 
