@@ -29,5 +29,6 @@ cleanup-gke:
 	kubectl delete -f ./kubernetes-gke
 
 deploy-minio:
-	helm install -f ./minio-config.yaml -n minio-ns --create-namespace minio-proj bitnami/minio
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm install -f kubernetes-minio/minio-config.yaml -n minio-ns --create-namespace minio-proj bitnami/minio
 	kubectl create -f kubernetes-minio/minio-external-service.yaml
