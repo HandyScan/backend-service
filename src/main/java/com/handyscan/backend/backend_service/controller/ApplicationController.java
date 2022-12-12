@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.handyscan.backend.backend_service.model.Response;
-import com.handyscan.backend.backend_service.repository.UserRecordRepository;
 import com.handyscan.backend.backend_service.service.ApplicationService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,15 +30,6 @@ public class ApplicationController {
 
     @Autowired
     ApplicationService applicationService;
-
-    @Autowired 
-    UserRecordRepository userRecordRepository; 
-
-    @GetMapping("/sup")
-    @Operation(summary = "Api responds with sup and a unique identifier")
-    public String sup() {
-        return "Sup " + uuid.toString();
-    }
 
     @PostMapping("/uploadImageAndProcess")
     @Operation(summary = "Api to upload and start the file processing")
